@@ -1,0 +1,81 @@
+name: taxonomy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  taxonomy:
+    strategy:
+      fail-fast: false
+      matrix:
+        taxonomy:
+        - { project: coreutils, split: no }
+        - { project: cpp_peglib, split: no }
+        - { project: cppcheck, split: yes, from:  1, to:  5 }
+        - { project: cppcheck, split: yes, from:  6, to: 10 }
+        - { project: cppcheck, split: yes, from: 11, to: 15 }
+        - { project: cppcheck, split: yes, from: 16, to: 20 }
+        - { project: cppcheck, split: yes, from: 21, to: 25 }
+        - { project: cppcheck, split: yes, from: 26, to: 30 }
+        - { project: dlt_daemon, split: no }
+        - { project: example, split: no }
+        - { project: exiv2, split: no }
+        - { project: jerryscript, split: no }
+        - { project: libchewing, split: no }
+        - { project: libssh, split: no }
+        - { project: libtiff, split: no }
+        - { project: libtiff_sanitizer, split: no }
+        - { project: libucl, split: no }
+        - { project: libxml2, split: no }
+        - { project: md4c, split: no }
+        - { project: ndpi, split: no }
+        - { project: openssl, split: yes, from: 1, to: 3 }
+        - { project: openssl, split: yes, from: 4, to: 5 }
+        - { project: openssl, split: yes, from: 6, to: 8 }
+        - { project: openssl, split: yes, from: 9, to: 11 }
+        - { project: openssl, split: yes, from: 12, to: 14 }
+        - { project: openssl, split: yes, from: 15, to: 17 }
+        - { project: openssl, split: yes, from: 18, to: 20 }
+        - { project: openssl, split: yes, from: 21, to: 23 }
+        - { project: openssl, split: yes, from: 24, to: 26 }
+        - { project: openssl, split: yes, from: 27, to: 28 }
+        - { project: proj, split: yes, from: 1, to: 6 }
+        - { project: proj, split: yes, from: 7, to: 12 }
+        - { project: proj, split: yes, from: 13, to: 18 }
+        - { project: proj, split: yes, from: 19, to: 24 }
+        - { project: proj, split: yes, from: 25, to: 28 }
+        - { project: wget2, split: no }
+        - { project: wireshark, split: yes, from: 1, to: 2 }
+        - { project: wireshark, split: yes, from: 3, to: 4 }
+        - { project: wireshark, split: yes, from: 5, to: 6 }
+        - { project: xbps, split: no }
+        - { project: yaml_cpp, split: no }
+        - { project: yara, split: no }
+        - { project: zsh, split: no }
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker-practice/actions-setup-docker@master
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Test taxonomy
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_dev.txt
+          mkdir mydir
+      - name: Run non-splited tests
+        run: PYTHONPATH=bugscpp/ python -m pytest --basetemp=mydir --auto-cleanup --uid=1001 --project ${{ matrix.taxonomy.project }} tests/taxonomy/test_taxonomy.py
+        env:
+          # Set DEFECTS4CPP_TEST_TAXONOMY=1
+          # In docker testing, test broken when pull image.
+          DEFECTS4CPP_TEST_TAXONOMY: 1
+        if: matrix.taxonomy.split == 'no'
+      - name: Run splited tests
+        run: PYTHONPATH=bugscpp/ python -m pytest --basetemp=mydir --auto-cleanup --uid=1001 --start-from=${{ matrix.taxonomy.from }} --end-to=${{ matrix.taxonomy.to }} --project ${{ matrix.taxonomy.project }} tests/taxonomy/test_taxonomy.py
+        env:
+          # Set DEFECTS4CPP_TEST_TAXONOMY=1
+          # In docker testing, test broken when pull image.
+          DEFECTS4CPP_TEST_TAXONOMY: 1
+        if: matrix.taxonomy.split == 'yes'
