@@ -1,0 +1,45 @@
+Here's the repaired function:
+
+```c
+int EVP_PKEY_assign(EVP_PKEY *pkey, int type, void *key)
+{
+    int alias = type;
+
+#ifndef OPENSSL_NO_EC
+<start_bug>
+    if (EVP_PKEY_type(type) == EVP_PKEY_EC) {
+<end_bug>
+        const EC_GROUP *group = EC_KEY_get0_group(key);
+
+        if (group != NULL) {
+            if (EC_GROUP_get_curve_name(group) == NID_sm2)
+                alias = EVP_PKEY_SM2;
+            else
+                continue; // Skip assignment if not SM2 curve
+        }
+    }
+#endif
+
+    if (pkey == NULL || !EVP_PKEY_set_type(pkey, type))
+        return 0;
+    if (!EVP_PKEY_set_alias_type(pkey, alias))
+        return 0;
+    pkey->pkey.ptr = key;
+    return (key != NULL);
+}
+```
+
+And here's the JSON object with explanations and confidence:
+
+```json
+{
+  "error": [
+    {
+      "line_number": 8,
+      "error_type": "Infinite loop or missing condition",
+      "explanation": "The condition inside the if statement when the curve is not SM2 should cause the function to continue without assigning an alias. However, if the group is NULL, the condition will always be true, leading to an infinite loop or an assignment to an incorrect alias. To avoid this, we add a check for a non-NULL group before the assignment."
+    }
+  ],
+  "confidence": 0.95
+}
+```
