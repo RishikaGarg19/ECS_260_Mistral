@@ -1,0 +1,36 @@
+Repaired function:
+```c
+static int readSeparateTilesIntoBuffer (TIFF* in, uint8 *obuf, uint32 imagelength, uint32 imagewidth, uint32 tw, uint32 tl, uint16 spp, uint16 bps)
+  {
+  // ...
+  for (row = 0; row < imagelength; row += tl)
+    {
+    nrow = (row + tl > imagelength) ? imagelength - row : tl;
+    for (col = 0; col < imagewidth; col += tw)
+      {
+        for (s = 0; s < spp; s++)  // <start_bug>
+        {  /* Read each plane of a tile set into srcbuffs[s] */
+          // ...
+        }  // <end_bug>
+        // ...
+      }
+    }
+  // ...
+  }
+```
+
+Explanation in JSON format:
+```json
+{
+  "error": [
+    {
+      "line_number": 48,
+      "error_type": "Missing closing brace",
+      "explanation": "A closing brace '}' is missing at the end of the for loop for 's' variable."
+    }
+  ],
+  "confidence": 99
+}
+```
+
+The bug in the code is a missing closing brace `}` at line 48, which causes the subsequent code to be incorrectly indented and leads to a syntax error. I've added the missing closing brace in the repaired function, and the confidence score is 99 as this error is relatively straightforward to fix and the fix is highly probable to be correct.

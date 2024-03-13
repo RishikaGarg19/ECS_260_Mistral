@@ -1,6 +1,3 @@
-# automate scripts to conduct experiment from given buggy repo list
-# Author: Xinzhuo Hu
-# Create Date: 2024-02-23 11:45am
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
@@ -226,8 +223,8 @@ def main():
     rp2_list = exp_utils_dev.get_safe_repair_scenario_list(2) # get safe repair scenario 2
     rp3_list = exp_utils_dev.get_safe_repair_scenario_list(3) # get safe repair scenario 3
     
-    current_repo = ['berry-4'] #'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 
-    prompt_id = 1
+    current_repo = ['libtiff-2'] #'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 
+    prompt_id = 4
     rp1_prompt4_stat_list = run_exps_from_buggyrepolist(current_repo, prompt_id, 3)
     exp_utils_dev.saveRepoAvgStatCSV(base_path, rp1_prompt4_stat_list, prompt_id)
 

@@ -18,8 +18,8 @@ repair_scenarios_2_safe = ['dlt_daemon-1', 'exiv2-20', 'yaml_cpp-6']
 repair_scenarios_3_safe_full = ['dlt_daemon-1', 'libtiff-1', 'ndpi-1']
 repair_scenarios_3_safe = ['dlt_daemon-1', 'libtiff-1']
 
-# repos_with_modification = ['berry-1', 'berry-3', 'berry-4', 'libtiff-1', 'libtiff-2']
-# repos_with_omission = ['berry-2', 'libtiff-3', 'libtiff-4', 'libtiff-5']
+repos_with_modification = ['berry-1', 'berry-3', 'berry-4', 'libtiff-1', 'libtiff-2']
+repos_with_omission = ['berry-2', 'libtiff-3', 'libtiff-4', 'libtiff-5']
 repos_with_logical_error = ['berry-4']
 repos_with_CVE = ['libtiff-1', 'libtiff-3', 'libtiff-5']
 repos_with_zero_division = ['libtiff-3', 'libtiff-4']
@@ -66,15 +66,15 @@ def constructPrompt(function: str, prompt_id: int, repo_name: str , single_multi
         if single_multi_str == 'multi-line': single_multi_ind = 2
         error_type_list = []
 
-        if single_multi_ind == 1:
-            if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
-            if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
-            if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
-            # if repo_name in repos_with_modification: error_type_list.append('error due to modification')
-            # if repo_name in repos_with_omission: error_type_list.append('error due to omission')
-            if repo_name in repos_with_logical_error: error_type_list.append('some logical error')
-            if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
-            if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
+        # if single_multi_ind == 1:
+        if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
+        if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
+        if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
+        if repo_name in repos_with_modification: error_type_list.append('error due to modification')
+        if repo_name in repos_with_omission: error_type_list.append('error due to omission')
+        if repo_name in repos_with_logical_error: error_type_list.append('logical error')
+        if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
+        if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
 
         return constructPrompt_2(function, single_multi_ind, error_type_list)
 
@@ -83,17 +83,19 @@ def constructPrompt(function: str, prompt_id: int, repo_name: str , single_multi
 
     elif prompt_id == 4:
         single_multi_ind = 1
-        if single_multi_str == 'multi-line': single_multi_ind = 2
+        if single_multi_str == 'multi-line': 
+            single_multi_ind = 2
+
         error_type_list = []
-        if single_multi_ind == 1:
-            if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
-            if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
-            if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
-            # if repo_name in repos_with_modification: error_type_list.append('error due to modification')
-            # if repo_name in repos_with_omission: error_type_list.append('error due to omission')
-            if repo_name in repos_with_logical_error: error_type_list.append('some logical error')
-            if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
-            if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
+        # if single_multi_ind == 1:
+        if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
+        if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
+        if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
+        if repo_name in repos_with_modification: error_type_list.append('error due to modification')
+        if repo_name in repos_with_omission: error_type_list.append('error due to omission')
+        if repo_name in repos_with_logical_error: error_type_list.append('logical error')
+        if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
+        if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
                 
         return constructPrompt_4(function, single_multi_ind, error_type_list)
 

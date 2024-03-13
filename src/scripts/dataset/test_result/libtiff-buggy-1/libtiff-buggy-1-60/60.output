@@ -1,6 +1,4 @@
 FAIL: tiffcrop-extractz14-rgb-3c-8b.sh
-make[1]: *** [Makefile:988: test-suite.log] Error 1
-make: *** [Makefile:1096: check-TESTS] Error 2
 ============================================================================
 Testsuite summary for LibTIFF Software 4.0.6
 ============================================================================
@@ -15,3 +13,5 @@ Testsuite summary for LibTIFF Software 4.0.6
 See test/test-suite.log
 Please report to tiff@lists.maptools.org
 ============================================================================
+make[1]: *** [Makefile:988: test-suite.log] Error 1
+make: *** [Makefile:1096: check-TESTS] Error 2

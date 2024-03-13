@@ -1,0 +1,54 @@
+Repaired function:
+```c
+static int readSeparateTilesIntoBuffer (TIFF* in, uint8 *obuf, uint32 imagelength, uint32 imagewidth, uint32 tw, uint32 tl, uint16 spp, uint16 bps) {
+  // ...
+  for (row = 0; row < imagelength; row += tl) {
+    nrow = (row + tl > imagelength) ? imagelength - row : tl;
+    for (col = 0; col < imagewidth; col += tw) {
+      for (s = 0; s < spp; s++) { // <start_bug>
+        // ...
+        // Read each plane of a tile set into srcbuffs[s]
+        tbytes = TIFFReadTile(in, srcbuffs[s], col, row, 0, s);
+        if (tbytes < 0 && !ignore) {
+          // ...
+          // Free memory for all previous samples
+          for (int prev_sample = 0; prev_sample < s; prev_sample++) {
+            tbuff = srcbuffs[prev_sample];
+            if (tbuff != NULL)
+              _TIFFfree(tbuff);
+          }
+          // Free memory for the current sample and return
+          tbuff = srcbuffs[s];
+          if (tbuff != NULL)
+            _TIFFfree(tbuff);
+          return status;
+        }
+      } // <end_bug>
+      // ...
+    }
+  }
+  // ...
+}
+```
+
+Explanation JSON:
+
+```json
+{
+  "error": [
+    {
+      "line_number": 56,
+      "error_type": "Memory leak",
+      "explanation": "The function freed the memory for all previous samples, but did not free the memory for the current sample when an error occurred."
+    },
+    {
+      "line_number": 56,
+      "error_type": "Invalid condition",
+      "explanation": "The error-handling code did not free the memory for the current sample before returning."
+    }
+  ],
+  "confidence": 99
+}
+```
+
+In the buggy function, the memory leak and invalid condition errors occurred because the error-handling code did not free the memory for the current sample before returning from the function. The repaired function addresses these issues by freeing the memory for the current sample before returning, and updating the loop variable to avoid freeing the memory for subsequent samples.
