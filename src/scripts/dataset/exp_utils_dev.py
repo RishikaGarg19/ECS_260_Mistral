@@ -8,7 +8,7 @@ import dataset_api
 # RS_1: single-line - invalid-condition: , num: 13
 repair_scenarios_1_safe  = ['berry-5', 'cpp_peglib-4', 'cppcheck-8', 
                         'cppcheck-9', 'cppcheck-11', 'cppcheck-25', 'exiv2-13', 'exiv2-15', 
-                        'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 'yara-2']
+                        'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 'yara-2', 'berry-3']
 
 # RS_2: single-line - invalid-format-string: , num: 4
 repair_scenarios_2_full = ['cpp_peglib-8', 'dlt_daemon-1', 'exiv2-20', 'yaml_cpp-6']
@@ -18,9 +18,15 @@ repair_scenarios_2_safe = ['dlt_daemon-1', 'exiv2-20', 'yaml_cpp-6']
 repair_scenarios_3_safe_full = ['dlt_daemon-1', 'libtiff-1', 'ndpi-1']
 repair_scenarios_3_safe = ['dlt_daemon-1', 'libtiff-1']
 
+# repos_with_modification = ['berry-1', 'berry-3', 'berry-4', 'libtiff-1', 'libtiff-2']
+# repos_with_omission = ['berry-2', 'libtiff-3', 'libtiff-4', 'libtiff-5']
+repos_with_logical_error = ['berry-4']
+repos_with_CVE = ['libtiff-1', 'libtiff-3', 'libtiff-5']
+repos_with_zero_division = ['libtiff-3', 'libtiff-4']
+
 class parsedLLMRespond:
-    def __init__(self, repaired_func_str : str, confidence : float, errlin_num_list : list, 
-                 error_type_list : list, explan_list : list, line_offset : int) -> None:
+    def __init__(self, repaired_func_str: str, confidence: float, errlin_num_list: list, 
+                 error_type_list: list, explan_list: list, line_offset: int) -> None:
         
         self.repaired_func_str = repaired_func_str
         self.confidence = confidence
@@ -30,9 +36,9 @@ class parsedLLMRespond:
         self.line_offset = line_offset
 
 class evalLLMRespond:
-    def __init__(self, prompt_ind : int, confidence : float, build_result : bool, 
-                 identify_errline_accuracy : float, pass_rate : float, response_time : float, 
-                 pass_testcases_num : int, fail_testcases_num : int, llm_error_line_list : list, true_error_line_list : list) -> None:
+    def __init__(self, prompt_ind: int, confidence: float, build_result: bool, 
+                 identify_errline_accuracy: float, pass_rate: float, response_time: float, 
+                 pass_testcases_num: int, fail_testcases_num: int, llm_error_line_list: list, true_error_line_list: list) -> None:
         
         self.prompt_ind = prompt_ind
         self.confidence = confidence
@@ -45,29 +51,35 @@ class evalLLMRespond:
         self.llm_error_line_list = llm_error_line_list
         self.true_error_line_list = true_error_line_list
 
-def get_safe_repair_scenario_list(index : int) -> list:
-
+def get_safe_repair_scenario_list(index: int) -> list:
     if index == 1: return repair_scenarios_1_safe
     elif index == 2: return repair_scenarios_2_safe
     elif index == 3: return repair_scenarios_3_safe
     else: raise RuntimeError("Hi Kid! You want to get something dangerous...") 
 
 
-def constructPrompt(function : str, prompt_id : int, repo_name : str , single_multi_str = 'single-line'):
-    
+def constructPrompt(function: str, prompt_id: int, repo_name: str , single_multi_str = 'single-line'):
     if prompt_id == 1: return constructPrompt_1(function)
 
     elif prompt_id == 2:
         single_multi_ind = 1
         if single_multi_str == 'multi-line': single_multi_ind = 2
         error_type_list = []
+
         if single_multi_ind == 1:
             if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
             if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
             if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
+            # if repo_name in repos_with_modification: error_type_list.append('error due to modification')
+            # if repo_name in repos_with_omission: error_type_list.append('error due to omission')
+            if repo_name in repos_with_logical_error: error_type_list.append('some logical error')
+            if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
+            if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
+
         return constructPrompt_2(function, single_multi_ind, error_type_list)
 
-    elif prompt_id == 3: return constructPrompt_3(function)
+    elif prompt_id == 3: 
+        return constructPrompt_3(function)
 
     elif prompt_id == 4:
         single_multi_ind = 1
@@ -77,9 +89,16 @@ def constructPrompt(function : str, prompt_id : int, repo_name : str , single_mu
             if repo_name in repair_scenarios_1_safe: error_type_list.append('invalid condition')
             if repo_name in repair_scenarios_2_safe: error_type_list.append('invalid format string')
             if repo_name in repair_scenarios_3_safe: error_type_list.append('memory error')
+            # if repo_name in repos_with_modification: error_type_list.append('error due to modification')
+            # if repo_name in repos_with_omission: error_type_list.append('error due to omission')
+            if repo_name in repos_with_logical_error: error_type_list.append('some logical error')
+            if repo_name in repos_with_CVE: error_type_list.append('vulnerability error')
+            if repo_name in repos_with_zero_division: error_type_list.append('error due to division by zero')
+                
         return constructPrompt_4(function, single_multi_ind, error_type_list)
 
-    else:  raise RuntimeError("Other Prompts to be implemented!")
+    else:  
+        raise RuntimeError("Other Prompts to be implemented!")
 
 def constructPrompt_1(buggy_function):
     user_message = (
@@ -108,7 +127,7 @@ Here is the template of the JSON code you will return to me:
     )
     return user_message
 
-def constructPrompt_2(buggy_function : str, single_multi_ind : int, error_types : list) -> str:
+def constructPrompt_2(buggy_function: str, single_multi_ind: int, error_types: list) -> str:
     
     bug_annotation_line = ""
     et_string = ' and '.join(e for e in error_types)
@@ -147,7 +166,7 @@ Here is the template of the JSON code you will return to me:
     )
     return user_message
 
-def constructPrompt_3(buggy_function_with_label : str) -> str:
+def constructPrompt_3(buggy_function_with_label: str) -> str:
     user_message = (
     f"""You are a automated program repair tool for C and C++. Your task is to provide a fix for the buggy function in <<<>>>, along with a confidence score for your repaired function.
 In the buggy function, the buggy code is already located for you within <start_bug> and <end_bug>.
@@ -174,7 +193,7 @@ And here is the template of the JSON code you will return to me:
     )
     return user_message
 
-def constructPrompt_4(buggy_function_with_label : str, single_multi_ind : int, error_types : list) -> str:
+def constructPrompt_4(buggy_function_with_label: str, single_multi_ind: int, error_types: list) -> str:
     # check if error_types is empty
     if not error_types: raise RuntimeError("Error Type List is empty!")
 
@@ -217,7 +236,7 @@ Here is the template of the JSON code you will return to me:
 
 # Input: a buggy_repo_name: str
 # Output: buggy_function_str(assume to be a single function), error_line_number_list, buggy_function_labeled_str (for prompt 3)
-def buggyFuncStrGetter(buggy_repo : str):
+def buggyFuncStrGetter(buggy_repo: str):
     # download repo data
     dataset_api.download_buggy_data_by_repo(buggy_repo)
     # get buggy code Musheng's api
@@ -232,8 +251,8 @@ def buggyFuncStrGetter(buggy_repo : str):
 
     return buggy_func_str, true_error_line_list, buggy_func_with_label_str
 
-# Input : TXT file path 
-# Output : repaired_func_byLLM, confidence_score, lin_num_list, error_type_list, explanations_list
+# Input: TXT file path 
+# Output: repaired_func_byLLM, confidence_score, lin_num_list, error_type_list, explanations_list
 def extractLLMOutputFromFile(filepath):
     file = open(filepath, 'r')
     content = file.read()
@@ -284,7 +303,7 @@ def extractLLMOutputFromFile2(filepath):
 
 # Input: LLM reply string
 # Output: modified LLM reply by changing c++ to cpp, and the line_offset
-def regularizationLLMOutputFromStr(content : str):
+def regularizationLLMOutputFromStr(content: str):
     copy_list = []
     markline = '```'
     mark_linnum = 0
@@ -311,9 +330,9 @@ def removeInvalidCharactersFromJSONCodeSnippet(multistr):
     modified_str = '\n'.join(copy_list)
     return modified_str
 
-# Input : string 
-# Output : repaired_func_byLLM, confidence_score, lin_num_list, error_type_list, explanations_list
-def extractLLMOutputFromStr(content : str) -> parsedLLMRespond:
+# Input: string 
+# Output: repaired_func_byLLM, confidence_score, lin_num_list, error_type_list, explanations_list
+def extractLLMOutputFromStr(content: str) -> parsedLLMRespond:
     # need to convert c++ to cpp and calculate line offset
     content_new, mark_linnum = regularizationLLMOutputFromStr(content)
 
@@ -340,13 +359,13 @@ def extractLLMOutputFromStr(content : str) -> parsedLLMRespond:
     
     return parsedLLMRespond(repaired_func_byLLM, confidence_score, lin_num_list, error_type_list, explanations_list, mark_linnum)
 
-def extractLLMOutputFromStr2(content : str) -> parsedLLMRespond:
+def extractLLMOutputFromStr2(content: str) -> parsedLLMRespond:
     # need to convert c++ to cpp and calculate line offset
     # content_new, mark_linnum = regularizationLLMOutputFromStr(content)
     content_new = content
 
     pattern = r'^```(?:\w+)?\s*\n(.*?)(?=^```)```'	
-    # print('content_new : ', content_new)
+    # print('content_new: ', content_new)
     result = re.findall(pattern, content_new, re.DOTALL | re.MULTILINE)
     repaired_func_byLLM = result[0]
 
@@ -354,8 +373,8 @@ def extractLLMOutputFromStr2(content : str) -> parsedLLMRespond:
 
 # Input: Prompt index, true_error_line_num_list, A parsedLLMRespond object, A TestResult object
 # Output: A EvalLLM object
-def evalLLMRespondGetter(prompt_ind : int , true_errlin_num_list : list , response_time : float,
-                            pasred_llm_respond : parsedLLMRespond, test_result_obj) -> evalLLMRespond:
+def evalLLMRespondGetter(prompt_ind: int , true_errlin_num_list: list , response_time: float,
+                            pasred_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
     build_result = test_result_obj.build_result
     confidence_score = pasred_llm_respond.confidence
     this_pass_rate = test_result_obj.test_cases_result.pass_rate    
@@ -371,8 +390,8 @@ def evalLLMRespondGetter(prompt_ind : int , true_errlin_num_list : list , respon
     return evalLLMRespond(prompt_ind, confidence_score, build_result, identify_accuracy,
                           this_pass_rate, response_time, pass_testcases_num, fail_testcases_num, llm_errorlin_list, true_errlin_num_list)
 
-def evalLLMRespondGetter2(prompt_ind : int , true_errlin_num_list : list , response_time : float, 
-                            pasred_llm_respond : parsedLLMRespond, test_result_obj) -> evalLLMRespond:
+def evalLLMRespondGetter2(prompt_ind: int , true_errlin_num_list: list , response_time: float, 
+                            pasred_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
 
     build_result = test_result_obj.build_result
     # confidence_score = pasred_llm_respond.confidence
@@ -396,7 +415,7 @@ def evalLLMRespondGetter2(prompt_ind : int , true_errlin_num_list : list , respo
 
 # Input: a base directory, a result object returned by 'dataset_api.test_buggy_codes'
 # Output: a successful message:
-def saveTestResultTXT(output_dir : str, result_obj):
+def saveTestResultTXT(output_dir: str, result_obj):
     os.makedirs(output_dir, exist_ok=True)
     filename = 'test_output.txt'
     repo_filename = result_obj.repo_name + '_' + filename
@@ -415,7 +434,7 @@ def saveTestResultTXT(output_dir : str, result_obj):
 
 # Input: a base directory, the LLM's respond string
 # Output: a successful message:
-def saveLLMReply(output_dir : str, LLM_respond_str : str):
+def saveLLMReply(output_dir: str, LLM_respond_str: str):
     os.makedirs(output_dir, exist_ok=True)
     filename = 'llm_reply.txt'
     f = open(os.path.join(output_dir, filename), "w")
@@ -427,7 +446,7 @@ def saveLLMReply(output_dir : str, LLM_respond_str : str):
 
 # Input: a base directory, a evalLLMRespond object
 # Output: a successful message
-def saveEvalLLMObjTXT(output_dir : str, eval_llm_obj : evalLLMRespond):
+def saveEvalLLMObjTXT(output_dir: str, eval_llm_obj: evalLLMRespond):
     os.makedirs(output_dir, exist_ok=True)
     filename = 'llm_eval_output.txt'
     f = open(os.path.join(output_dir, filename), "w")
@@ -449,7 +468,7 @@ def saveEvalLLMObjTXT(output_dir : str, eval_llm_obj : evalLLMRespond):
 # Input: a base-directory
 # Input: a 2-level list return by run_exps_from_buggyrepolist
 # Output: a successful message
-def saveRepoAvgStatCSV(output_dir : str, repo_stat_list : list, prompt_id : int):
+def saveRepoAvgStatCSV(output_dir: str, repo_stat_list: list, prompt_id: int):
     # first check if the input prompt_id matches the list
     if repo_stat_list[0][1] != prompt_id: raise RuntimeError(f"Input Prompt_ID: {prompt_id} mismatch!")
 
@@ -473,7 +492,7 @@ def saveRepoAvgStatCSV(output_dir : str, repo_stat_list : list, prompt_id : int)
     # successful message
     print(f"  Success: write {filename} into {output_dir} .")
 
-def saveRepoAvgStatCSV2(output_dir : str, repo_stat_list : list, prompt_id : int):
+def saveRepoAvgStatCSV2(output_dir: str, repo_stat_list: list, prompt_id: int):
     # first check if the input prompt_id matches the list
     # if repo_stat_list[0][1] != prompt_id: raise RuntimeError(f"Input Prompt_ID: {prompt_id} mismatch!")
 
