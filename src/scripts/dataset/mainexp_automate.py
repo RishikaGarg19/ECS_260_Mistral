@@ -1,6 +1,3 @@
-# automate scripts to conduct experiment from given buggy repo list
-# Author: Xinzhuo Hu
-# Create Date: 2024-02-23 11:45am
 from mistralai.client import MistralClient
 from mistralai.models.chat_completion import ChatMessage
 
@@ -11,10 +8,10 @@ import json
 import exp_utils_dev
 import dataset_api
 
-api_key = "my-secret-key"
+api_key = "vkG7aFIgj6DjzZUUQt73zjjZjI5T7cMK"
 base_path = os.path.join(os.path.abspath(os.curdir), 'exp_results')
 
-def run_mistral(user_message, model="mistral-medium"):
+def run_mistral(user_message, model="mistral-small-latest"):    #open-mistral-7b, open-mixtral-8x7b, mistral-small-latest, mistral-medium-latest
     client = MistralClient(api_key=api_key)
     messages = [
         ChatMessage(role="user", content=user_message)
@@ -222,17 +219,16 @@ def main():
     test_list_1 = ['berry-5']
     test_list_2 = ['berry-5', 'cpp_peglib-4', 'cppcheck-8']
 
-    rp1_remaining_list = ['libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 'yara-2']
-
     rp1_list = exp_utils_dev.get_safe_repair_scenario_list(1) # get safe repair scenario 1
     rp2_list = exp_utils_dev.get_safe_repair_scenario_list(2) # get safe repair scenario 2
     rp3_list = exp_utils_dev.get_safe_repair_scenario_list(3) # get safe repair scenario 3
-
-    rp1_prompt4_stat_list = run_exps_from_buggyrepolist(rp1_remaining_list, 4, 3)
-    exp_utils_dev.saveRepoAvgStatCSV(base_path, rp1_prompt4_stat_list, 4)
+    
+    current_repo = ['libtiff-2'] #'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 
+    prompt_id = 4
+    rp1_prompt4_stat_list = run_exps_from_buggyrepolist(current_repo, prompt_id, 3)
+    exp_utils_dev.saveRepoAvgStatCSV(base_path, rp1_prompt4_stat_list, prompt_id)
 
     print('-' * 55 + 'Main   Ends:' + '-' * 55)
-
 
 if __name__ == "__main__":
     main()

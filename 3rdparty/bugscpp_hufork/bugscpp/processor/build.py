@@ -1,8 +1,8 @@
 """
 Build command.
-
 Compile projects inside a container.
 """
+
 import argparse
 import os
 import shutil
@@ -20,7 +20,6 @@ from processor.core.argparser import create_common_project_parser
 from processor.core.command import DockerCommand, DockerCommandScript, DockerCommandScriptGenerator
 from processor.core.data import Worktree
 
-
 class ValidateExportPath(argparse.Action):
     """
     Validator for export path argument.
@@ -33,11 +32,13 @@ class ValidateExportPath(argparse.Action):
         values: Optional[Path],
         option_string=None,
     ):
+
         values = values or Path(os.getcwd())
+
         if not values.absolute().exists():
             raise DppArgparseFileNotFoundError(str(values))
-        setattr(namespace, self.dest, values)
 
+        setattr(namespace, self.dest, values)
 
 class BuildCommandScript(DockerCommandScript):
     def __init__(self, verbose: bool, *args, **kwargs):
@@ -52,6 +53,8 @@ class BuildCommandScript(DockerCommandScript):
             message.stdout_progress_detail(f"defects4cpp.build[{linenr}]: {line}")
 
     def output(self, linenr: Optional[int], exit_code: Optional[int], stream: str):
+        print(stream)
+
         if not exit_code:
             return
 
@@ -61,7 +64,6 @@ class BuildCommandScript(DockerCommandScript):
     def after(self):
         pass
 
-
 class BuildCommandScriptGenerator(DockerCommandScriptGenerator):
     def __init__(
         self,
@@ -70,6 +72,7 @@ class BuildCommandScriptGenerator(DockerCommandScriptGenerator):
         worktree: Worktree,
         verbose: bool,
     ):
+
         super().__init__(metadata, worktree, verbose)
         self.command = command
 
@@ -77,7 +80,6 @@ class BuildCommandScriptGenerator(DockerCommandScriptGenerator):
         return (
             BuildCommandScript(self.stream, cmd.type, cmd.lines) for cmd in self.command
         )
-
 
 class BuildCommand(DockerCommand):
     def __init__(self):
@@ -93,6 +95,7 @@ class BuildCommand(DockerCommand):
             nargs="?",
             action=ValidateExportPath,
         )
+
         self.parser.add_argument(
             "-u",
             "--uid",
@@ -101,14 +104,18 @@ class BuildCommand(DockerCommand):
             help="set uid of user defects4cpp",
             nargs="?",
         )
+
         self.parser.usage = (
             "bugcpp.py build PATH [-j|--jobs=JOBS] [--coverage] [-v|--verbose] [-u|--uid=UID_DPP_DOCKER_USER] "
             "[-e|--export[=EXPORT_PATH]]"
         )
+
         self.parser.description = dedent(
+
             """\
         Build project inside docker.
         """
+
         )
 
     def create_script_generator(
@@ -122,6 +129,7 @@ class BuildCommand(DockerCommand):
         command = (
             common.build_coverage_command if args.coverage else common.build_command
         )
+
         return BuildCommandScriptGenerator(command, metadata, worktree, args.verbose)
 
     def setup(self, generator: DockerCommandScriptGenerator):
@@ -137,18 +145,22 @@ class BuildCommand(DockerCommand):
         message.stdout_progress(f"[{generator.metadata.name}] done")
 
     @property
+
     def help(self) -> str:
         return "Build local with a build tool from docker"
 
     @staticmethod
+
     def _find_compile_commands_json(host: Path, dest: Path):
         build_dir = host / "build"
         if build_dir.exists():
             compile_commands = build_dir / "compile_commands.json"
+
         else:
             compile_commands = host / "compile_commands.json"
 
         if compile_commands.exists():
             shutil.copyfile(str(compile_commands), str(dest / "compile_commands.json"))
+
         else:
             message.warning(__name__, "compile_commands.json could not be found")
