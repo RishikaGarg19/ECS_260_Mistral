@@ -1,0 +1,96 @@
+Repaired function:
+```c
+static int str_format(bvm *vm)
+{
+    int top = be_top(vm);
+    if (top > 0 && be_isstring(vm, 1)) {
+        int index = 2;
+        const char *format = be_tostring(vm, 1);
+        pushstr(vm, "", 0);
+        for (;;) {
+            char mode[MAX_FORMAT_MODE];
+            char buf[128];
+            const char *p = strchr(format, '%');
+            if (p == NULL) {
+                break;
+            }
+            if (p > format + 1 && *(p - 1) == '%') { // Added check for escaped '%'
+                pushstr(vm, format, p - format - 1);
+                pushstr(vm, "%", 1);
+                concat2(vm);
+                format = p;
+                continue;
+            }
+            pushstr(vm, format, p - format);
+            concat2(vm);
+            p = get_mode(p + 1, mode);
+            buf[0] = '\0';
+            if (index > top) {
+                be_raise(vm, "runtime_error", be_pushfstring(vm,
+                    "bad argument #%d to 'format': no value", index));
+            }
+            switch (*p) {
+            case 'd': case 'i': case 'o':
+            case 'u': case 'x': case 'X':
+                if (be_isint(vm, index)) {
+                    mode_fixlen(mode, BE_INT_FMTLEN);
+                    sprintf(buf, mode, be_toint(vm, index));
+                }
+                be_pushstring(vm, buf);
+                break;
+            case 'e': case 'E':
+            case 'f': case 'g': case 'G':
+                if (be_isnumber(vm, index)) {
+                    sprintf(buf, mode, be_toreal(vm, index));
+                }
+                be_pushstring(vm, buf);
+                break;
+            case 'c':
+                if (be_isint(vm, index)) {
+                    sprintf(buf, "%c", (int)be_toint(vm, index));
+                }
+                be_pushstring(vm, buf);
+                break;
+            case 's': {
+                const char *s = be_tostring(vm, index);
+                int len = be_strlen(vm, 2);
+                if (len > 100 && strlen(mode) == 2) {
+                    be_pushvalue(vm, index);
+                } else {
+                    sprintf(buf, mode, s);
+                    be_pushstring(vm, buf);
+                }
+                break;
+            }
+            default: /* error */
+                be_raise(vm, "runtime_error", be_pushfstring(vm,
+                    "invalid option '%%%c' to 'format'", *p));
+                break;
+            }
+            concat2(vm);
+            format = p + 1;
+            ++index;
+        }
+        pushstr(vm, format, strlen(format));
+        concat2(vm);
+        be_return(vm);
+    }
+    be_return_nil(vm);
+}
+```
+
+Explanations:
+```json
+{
+  "error": [
+    {
+      "line_number": 17,
+      "error_type": "Logic Error",
+      "explanation": "The function does not handle the case of an escaped '%' character in the format string."
+    }
+  ],
+  "confidence": 99
+}
+```
+
+The repaired function adds a check for an escaped '%' character before processing the '%' character in the format string. This ensures that the function correctly handles format strings with '%' characters that are meant to be included literally in the output.

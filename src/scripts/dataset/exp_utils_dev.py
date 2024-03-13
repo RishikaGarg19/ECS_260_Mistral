@@ -35,6 +35,7 @@ class parsedLLMRespond:
         self.explan_list = explan_list
         self.line_offset = line_offset
 
+
 class evalLLMRespond:
     def __init__(self, prompt_ind: int, confidence: float, build_result: bool, 
                  identify_errline_accuracy: float, pass_rate: float, response_time: float, 
@@ -56,7 +57,6 @@ def get_safe_repair_scenario_list(index: int) -> list:
     elif index == 2: return repair_scenarios_2_safe
     elif index == 3: return repair_scenarios_3_safe
     else: raise RuntimeError("Hi Kid! You want to get something dangerous...") 
-
 
 def constructPrompt(function: str, prompt_id: int, repo_name: str , single_multi_str = 'single-line'):
     if prompt_id == 1: return constructPrompt_1(function)
@@ -128,7 +128,6 @@ Here is the template of the JSON code you will return to me:
     return user_message
 
 def constructPrompt_2(buggy_function: str, single_multi_ind: int, error_types: list) -> str:
-    
     bug_annotation_line = ""
     et_string = ' and '.join(e for e in error_types)
     if single_multi_ind == 1: 
@@ -195,16 +194,19 @@ And here is the template of the JSON code you will return to me:
 
 def constructPrompt_4(buggy_function_with_label: str, single_multi_ind: int, error_types: list) -> str:
     # check if error_types is empty
-    if not error_types: raise RuntimeError("Error Type List is empty!")
+    if not error_types: 
+        raise RuntimeError("Error Type List is empty!")
 
     bug_annotation_line = ""
     et_string = ' and '.join(e for e in error_types)
     if single_multi_ind == 1: 
         bug_line_str = "there is a single-line error that"
         bug_annotation_line = (f'In the buggy function, {bug_line_str} is already located for you within <start_bug> and <end_bug>. The bug produces {et_string}.')
+    
     elif single_multi_ind == 2:
         bug_line_str = "You need to modify multiple lines in the function to fix the bug"
         bug_annotation_line = (f'In the buggy function, the buggy code is already located for you within <start_bug> and <end_bug>. The bug produces {et_string}. {bug_line_str}.')
+    
     else:
         raise RuntimeError("Input Error: single_multi_ind can only be 1(single-line error) or 2(multi-line error)!")
     
@@ -239,6 +241,7 @@ Here is the template of the JSON code you will return to me:
 def buggyFuncStrGetter(buggy_repo: str):
     # download repo data
     dataset_api.download_buggy_data_by_repo(buggy_repo)
+    
     # get buggy code Musheng's api
     buggy_function = dataset_api.get_buggy_function_by_repo(buggy_repo)
     key_code_file_str = list(buggy_function.keys())[0]
@@ -374,12 +377,12 @@ def extractLLMOutputFromStr2(content: str) -> parsedLLMRespond:
 # Input: Prompt index, true_error_line_num_list, A parsedLLMRespond object, A TestResult object
 # Output: A EvalLLM object
 def evalLLMRespondGetter(prompt_ind: int , true_errlin_num_list: list , response_time: float,
-                            pasred_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
+                            parsed_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
     build_result = test_result_obj.build_result
-    confidence_score = pasred_llm_respond.confidence
+    confidence_score = parsed_llm_respond.confidence
     this_pass_rate = test_result_obj.test_cases_result.pass_rate    
-    line_offset = pasred_llm_respond.line_offset
-    llm_errorlin_list = pasred_llm_respond.errlin_num_list
+    line_offset = parsed_llm_respond.line_offset
+    llm_errorlin_list = parsed_llm_respond.errlin_num_list
     correct_lin_num = 0
     for error_line in llm_errorlin_list:
         if (error_line in true_errlin_num_list) or ((error_line+line_offset) in true_errlin_num_list):
@@ -391,15 +394,15 @@ def evalLLMRespondGetter(prompt_ind: int , true_errlin_num_list: list , response
                           this_pass_rate, response_time, pass_testcases_num, fail_testcases_num, llm_errorlin_list, true_errlin_num_list)
 
 def evalLLMRespondGetter2(prompt_ind: int , true_errlin_num_list: list , response_time: float, 
-                            pasred_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
+                            parsed_llm_respond: parsedLLMRespond, test_result_obj) -> evalLLMRespond:
 
     build_result = test_result_obj.build_result
-    # confidence_score = pasred_llm_respond.confidence
+    # confidence_score = parsed_llm_respond.confidence
     this_pass_rate = test_result_obj.test_cases_result.pass_rate
     
     # calculate identify_accuracy
-    # line_offset = pasred_llm_respond.line_offset
-    # llm_errorlin_list = pasred_llm_respond.errlin_num_list
+    # line_offset = parsed_llm_respond.line_offset
+    # llm_errorlin_list = parsed_llm_respond.errlin_num_list
     correct_lin_num = 0
     # for error_line in llm_errorlin_list:
     #     if (error_line in true_errlin_num_list) or ((error_line+line_offset) in true_errlin_num_list):
