@@ -1,0 +1,40 @@
+Repaired function:
+```c++
+static void class_inherit(bparser *parser, bexpdesc *e)
+{
+    if (next_type(parser) == OPT_COLON) { /* ':' */
+        bexpdesc *e1 = NULL;
+        if (parser->token.type != OPT_COLON) {
+            scan_next_token(parser);
+        }
+        if (parser->token.type != IDENT) {
+            parser->error(parser, "Expected class name after ':'");
+            return;
+        }
+        e1 = new_bexpdesc();
+        strcpy(e1->u.ident.name, parser->token.u.ident.name);
+        scan_next_token(parser);
+        expr(parser, e1);
+        check_var(parser, e1);
+        be_code_setsuper(parser->finfo, e, e1);
+        free(e1);
+    }
+}
+```
+
+JSON object:
+```json
+{
+  "error": [
+    {
+      "line_number": 5,
+      "error_type": "Expected 'IDENT' after ':'",
+      "explanation": "In the original code, there's no check to ensure that the next token after ':' is an identifier. In the repaired code, we allocate memory for a new bexpdesc to store the class name and perform the necessary checks."
+    }
+  ],
+  "confidence": 0.95
+}
+```
+
+Explanation:
+The original buggy function does not check if the next token after the ':' is an identifier, which could potentially lead to unexpected behavior or compile errors. In the repaired function, we allocate memory for a new bexpdesc and perform the necessary checks to ensure that the next token is indeed an identifier representing the class name. This should prevent the error from occurring. The confidence score is set to 0.95 as the repair involves adding checks to ensure type safety.

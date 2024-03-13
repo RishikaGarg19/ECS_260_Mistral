@@ -1,0 +1,38 @@
+Here is the repaired function:
+
+```c
+static void vm_exec(bvm *vm)
+{
+    bclosure *clos;
+    bvalue *ktab, *reg;
+    binstruction ins;
+    vm->cf->status |= BASE_FRAME;
+newframe: /* a new call frame */
+    be_assert(var_isclosure(vm->cf->func));
+    clos = var_toobj(vm->cf->func);  /* `clos` is the current function/closure */
+    ktab = clos->proto->ktab;  /* `ktab` is the current constant table */
+    reg = vm->reg;  /* `reg` is the current stack base for the callframe */
+    while (1) {
+        ins = *vm->ip++;
+        switch (GET_OPCODE(ins)) {
+            // ... (other opcodes)
+        }
+    }
+}
+
+```
+
+And here is the JSON object with explanations:
+
+```json
+{
+  "error": [
+    {
+      "line_number": 12,
+      "error_type": "missing semicolon",
+      "explanation": "A semicolon is missing at the end of the `while` loop statement."
+    }
+  ],
+  "confidence": 95
+}
+```

@@ -1,0 +1,10 @@
+Test_Repo: berry-1
+Prompt_ID: 1
+Repeat_Num: 3
+Total_Patch_Num: 3
+Compilable_Patch_Num: 1
+Plausible_Patch_Num: 1
+Average_Response_Time: 7.892147382100423
+Average_Confidence: 32.300000000000004
+Average_Identify_Accuracy: 0.0
+Average_Pass_Rate: 0.3333333333333333
