@@ -22,7 +22,7 @@ class BuildResult:
 
 
 class TestCasesResult:
-    def __init__(self, pass_rate: float, pass_test_cases: [], fail_test_cases: [], fail_test_cases_info: []):
+    def __init__(self, pass_rate: float, pass_test_cases: List[str], fail_test_cases: List[str], fail_test_cases_info: List[str]):
         self.pass_rate = pass_rate
         self.pass_test_cases = pass_test_cases
         self.fail_test_cases = fail_test_cases
@@ -148,7 +148,7 @@ def test_repo(buggy_repo: str, is_buggy_repo: bool = True) -> TestCasesResult:
     return compute_test_result(res_path, [])
 
 
-def test_repo_with_tcs(buggy_repo: str, test_cases: [], is_buggy_repo: bool = True) -> TestCasesResult:
+def test_repo_with_tcs(buggy_repo: str, test_cases: List[str], is_buggy_repo: bool = True) -> TestCasesResult:
     repo_path, res_path = generate_repo_res_path(buggy_repo, is_buggy_repo)
     test_with_tc(repo_path, res_path, test_cases)
     return compute_test_result(res_path, test_cases)
@@ -176,13 +176,13 @@ def test(test_path, res_path):
     subprocess.run(test_command.split(), check=True, text=True, capture_output=True)
 
 
-def test_with_tc(test_path, res_path, test_cases: []):
+def test_with_tc(test_path, res_path, test_cases: List[str]):
     tcs = ",".join([str(i) for i in test_cases])
     test_command = test_command_with_tc_pattern.format(python_prefix, bugscpp_script_path, test_path, res_path, tcs)
     subprocess.run(test_command.split(), check=True, text=True, capture_output=True)
 
 
-def compute_test_result(res_path: str, test_cases: []) -> TestCasesResult:
+def compute_test_result(res_path: str, test_cases: List[str]) -> TestCasesResult:
     idx = 0
     count = 0
     pass_test_cases = []
@@ -220,12 +220,12 @@ def remove_ansi_escape_sequences(text):
     return ansi_escape_re.sub('', text)
 
 
-def get_repo_failed_test_cases(repository_name: str) -> []:
+def get_repo_failed_test_cases(repository_name: str) -> List[str]:
     with open('./repo_test_cases.json', 'r') as file:
         return json.load(file)[repository_name]
 
 
-def get_repo_failed_test_cases_info(repository_name: str, test_case_no: str) -> []:
+def get_repo_failed_test_cases_info(repository_name: str, test_case_no: str) -> List[str]:
     with open('./repo_tc_failing_info.json', 'r') as file:
         repo_default_failed_test_cases = get_repo_failed_test_cases(repository_name)
         if int(test_case_no) in repo_default_failed_test_cases:
