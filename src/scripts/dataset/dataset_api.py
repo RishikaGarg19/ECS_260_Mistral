@@ -4,6 +4,8 @@ import test
 
 from enum import Enum
 
+from typing import Dict, List
+
 bugs_line_tags = ["single-line", "multi-line"]
 error_types_tags = ["invalid-condition", "invalid-format-string", "memory-error"]
 
@@ -47,7 +49,7 @@ rq3_repo_list = ['libtiff-1', 'libtiff-2', 'libtiff-3', 'libtiff-4', 'libtiff-5'
 
 
 # search buggy repos
-def search_repositories_by_rs(repair_scenario: RepairScenario) -> []:
+def search_repositories_by_rs(repair_scenario: RepairScenario) -> List[str]:
     if repair_scenario == RepairScenario.REPAIR_SCENARIO_1:
         return repair_scenarios_1_repos
     elif repair_scenario == RepairScenario.REPAIR_SCENARIO_2:
@@ -62,7 +64,7 @@ def search_repositories_by_rs(repair_scenario: RepairScenario) -> []:
         return repair_scenarios_6_repos
 
 
-def search_repositories_by_tags(bugs_line_tag: str, error_types_tag: str) -> []:
+def search_repositories_by_tags(bugs_line_tag: str, error_types_tag: str) -> List[str]:
     return fetch.search_repos(bugs_line_tag, error_types_tag)
 
 
@@ -82,15 +84,15 @@ def download_buggy_data_by_tags(bugs_line_tag: str, error_types_tag: str):
 
 
 # get buggy code/function/files
-def get_buggy_function_by_repo(repository_name: str) -> {}:
+def get_buggy_function_by_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_buggy_functions(repository_name)
 
 
-def get_buggy_function_with_label_repo(repository_name: str) -> {}:
+def get_buggy_function_with_label_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_buggy_functions_with_label(repository_name)
 
 
-def get_buggy_function_by_repo_rq3(repository_name: str) -> {}:
+def get_buggy_function_by_repo_rq3(repository_name: str) -> Dict[str, str]:
     if repository_name not in rq3_repo_list:
         raise Exception("current repository is not rq3 repository list!")
 
@@ -101,7 +103,7 @@ def get_buggy_function_by_repo_rq3(repository_name: str) -> {}:
     return buggy_function
 
 
-def get_buggy_function_with_label_repo_rq3(repository_name: str) -> {}:
+def get_buggy_function_with_label_repo_rq3(repository_name: str) -> Dict[str, str]:
     if repository_name not in rq3_repo_list:
         raise Exception("current repository is not rq3 repository list!")
 
@@ -112,27 +114,27 @@ def get_buggy_function_with_label_repo_rq3(repository_name: str) -> {}:
     return buggy_function
 
 
-def get_fixed_function_by_repo(repository_name: str) -> {}:
+def get_fixed_function_by_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_fixed_functions(repository_name)
 
 
-def get_fixed_function_with_label_repo(repository_name: str) -> {}:
+def get_fixed_function_with_label_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_fixed_functions_with_label(repository_name)
 
 
-def get_buggy_function_in_batch(repository_list: []) -> {}:
+def get_buggy_function_in_batch(repository_list: List[str]) -> Dict[str, str]:
     return fetch.get_buggy_functions_in_batch(repository_list)
 
 
-def get_complete_buggy_codes_by_repo(repository_name: str) -> {}:
+def get_complete_buggy_codes_by_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_complete_buggy_codes_by_repo(repository_name)
 
 
-def get_complete_fixed_codes_by_repo(repository_name: str) -> {}:
+def get_complete_fixed_codes_by_repo(repository_name: str) -> Dict[str, str]:
     return fetch.get_complete_fixed_codes_by_repo(repository_name)
 
 
-def get_complete_buggy_codes_in_batch(repository_list: []) -> {}:
+def get_complete_buggy_codes_in_batch(repository_list: List[str]) -> Dict[str, str]:
     return fetch.get_complete_buggy_codes_in_batch(repository_list)
 
 
@@ -205,7 +207,7 @@ def test_default_fixed_codes_with_failed_tcs(repository_name: str) -> test.TestR
     return test_default_fixed_codes_with_tcs(repository_name, test_cases)
 
 
-def test_buggy_codes_with_tcs(repository_name: str, fixed_code: str, test_cases: []) -> test.TestResult:
+def test_buggy_codes_with_tcs(repository_name: str, fixed_code: str, test_cases: List[str]) -> test.TestResult:
     update.update_buggy_code(repository_name, fixed_code)
     try:
         build_res = test.build_repo(repository_name)
@@ -220,7 +222,7 @@ def test_buggy_codes_with_tcs(repository_name: str, fixed_code: str, test_cases:
         update.restore_buggy_code(repository_name)
 
 
-def test_buggy_codes_with_tcs_rq3(repository_name: str, fixed_code: str, test_cases: []) -> test.TestResult:
+def test_buggy_codes_with_tcs_rq3(repository_name: str, fixed_code: str, test_cases: List[str]) -> test.TestResult:
     if repository_name not in rq3_repo_list:
         raise Exception("current repository is not rq3 repository list!")
 
@@ -238,13 +240,13 @@ def test_buggy_codes_with_tcs_rq3(repository_name: str, fixed_code: str, test_ca
         update.restore_buggy_code(repository_name)
 
 
-def test_default_buggy_codes_with_tcs(repository_name: str, test_cases: []) -> test.TestResult:
+def test_default_buggy_codes_with_tcs(repository_name: str, test_cases: List[str]) -> test.TestResult:
     build_res = test.build_repo(repository_name)
     test_res = test.test_repo_with_tcs(repository_name, test_cases)
     return test.TestResult(repository_name, build_res.build_res, build_res.build_output, test_res)
 
 
-def test_default_fixed_codes_with_tcs(repository_name: str, test_cases: []) -> test.TestResult:
+def test_default_fixed_codes_with_tcs(repository_name: str, test_cases: List[str]) -> test.TestResult:
     build_res = test.build_repo(repository_name, False)
     test_res = test.test_repo_with_tcs(repository_name, test_cases)
     return test.TestResult(repository_name, build_res.build_res, build_res.build_output, test_res)
