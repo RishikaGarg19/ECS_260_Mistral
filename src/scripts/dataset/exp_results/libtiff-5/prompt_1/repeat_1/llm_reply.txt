@@ -1,0 +1,87 @@
+Here is the repaired function:
+
+```c
+uint64
+TIFFVStripSize64(TIFF* tif, uint32 nrows)
+{
+	static const char module[] = "TIFFVStripSize64";
+	TIFFDirectory *td = &tif->tif_dir;
+
+	if (nrows == (uint32)-1)
+		nrows = td->td_imagelength;
+
+	if ((td->td_planarconfig == PLANARCONFIG_CONTIG) &&
+	    (td->td_photometric == PHOTOMETRIC_YCBCR) &&
+	    (!isUpSampled(tif))) {
+		uint16 ycbcrsubsampling[2];
+		uint16 samplingblock_samples;
+		uint32 samplingblocks_hor;
+		uint32 samplingblocks_ver;
+		uint64 samplingrow_samples;
+		uint64 samplingrow_size;
+
+		if (td->td_samplesperpixel != 3) {
+			TIFFErrorExt(tif->tif_clientdata, module,
+				     "Invalid td_samplesperpixel value");
+			return 0;
+		}
+
+		TIFFGetFieldDefaulted(tif, TIFFTAG_YCBCRSUBSAMPLING, ycbcrsubsampling,
+				      ycbcrsubsampling + 1);
+
+		if ((ycbcrsubsampling[0] != 1 && ycbcrsubsampling[0] != 2 && ycbcrsubsampling[0] != 4) ||
+		    (ycbcrsubsampling[1] != 1 && ycbcrsubsampling[1] != 2 && ycbcrsubsampling[1] != 4)) {
+			TIFFErrorExt(tif->tif_clientdata, module,
+				     "Invalid YCbCr subsampling (%dx%d)", ycbcrsubsampling[0],
+				     ycbcrsubsampling[1]);
+			return 0;
+		}
+
+		samplingblock_samples = ycbcrsubsampling[0] * ycbcrsubsampling[1] + 2;
+		samplingblocks_hor = TIFFhowmany_32(td->td_imagewidth, ycbcrsubsampling[0]);
+		samplingblocks_ver = TIFFhowmany_32(nrows, ycbcrsubsampling[1]);
+		samplingrow_samples = _TIFFMultiply64(tif, samplingblocks_hor, samplingblock_samples);
+		samplingrow_size = TIFFhowmany8_64(_TIFFMultiply64(tif, samplingrow_samples, td->td_bitspersample));
+		return _TIFFMultiply64(tif, samplingrow_size, samplingblocks_ver);
+	}
+
+	if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
+		nrows = (td->td_rowsperstrip == (uint32)-1 ? 1 :
+			 TIFFhowmany_32(td->td_imagelength, td->td_rowsperstrip));
+	}
+
+	return (TIFFhowmany8_64(nrows, td->td_bitspersample));
+}
+```
+
+Explanations, line numbers, and error types:
+
+```json
+{
+  "error": [
+    {
+      "line_number": 3618,
+      "error_type": "Undefined variable 'nstrips'",
+      "explanation": "The variable 'nstrips' is not declared or initialized before it is used in this function. It needs to be defined or its value should be assigned before it is used."
+    },
+    {
+      "line_number": 3621,
+      "error_type": "Mismatched parentheses",
+      "explanation": "The closing parenthesis in the if condition is missing, it should be added after 'Planarconfig_separate' to complete the condition."
+    },
+    {
+      "line_number": 3623,
+      "error_type": "Use of undeclared identifier '_TIFFMultiply32'",
+      "explanation": "The function '_TIFFMultiply32' is not declared in this function, it should be either defined inside this function or imported from another header file."
+    },
+    {
+      "line_number": 3626,
+      "error_type": "Use of undeclared identifier 'module'",
+      "explanation": "The identifier 'module' is not declared in this function, it should be declared and initialized before it is used."
+    }
+  ],
+  "confidence": 0.9
+}
+```
+
+The confidences in the explanations are based on the assumption that the code has no other issues, and the errors mentioned are the only issues. However, there might be other issues in the code that are not accounted for in this explanation. The confidence score is set to 0.9 because the code appears to be mostly correct, but there are some issues that need to be addressed.

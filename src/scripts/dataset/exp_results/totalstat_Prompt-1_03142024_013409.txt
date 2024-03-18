@@ -1,0 +1,6 @@
+Test_Buggy_Repo_List: ['libtiff-3']
+Total_Patch_Number: 2
+Total_Compilable_Patch_Number: 2
+Total_Plausible_Patch_Number: 0
+Compilable_Patch_List: ['libtiff-3_Prompt-1_Repeat-1', 'libtiff-3_Prompt-1_Repeat-2']
+Plausible_Patch_list: []

@@ -4,8 +4,8 @@ confidence_score: 0.95
 build_result: 0
 identify_accuracy: 0.0
 pass_rate: -1.0
-response_time: 6.088302850723267
+response_time: 53.323914766311646
 pass_testcases_num: 0
 fail_testcases_num: 0
-llm_errline_num_list: [22]
+llm_errline_num_list: [106]
 true_errline_num_list: [262, 277]

@@ -11,7 +11,7 @@ import dataset_api
 api_key = "vkG7aFIgj6DjzZUUQt73zjjZjI5T7cMK"
 base_path = os.path.join(os.path.abspath(os.curdir), 'exp_results')
 
-def run_mistral(user_message, model="mistral-small-latest"):    #open-mistral-7b, open-mixtral-8x7b, mistral-small-latest, mistral-medium-latest
+def run_mistral(user_message, model="open-mistral-7b"):    #open-mistral-7b, open-mixtral-8x7b, mistral-small-latest, mistral-medium-latest
     client = MistralClient(api_key=api_key)
     messages = [
         ChatMessage(role="user", content=user_message)
@@ -223,8 +223,8 @@ def main():
     rp2_list = exp_utils_dev.get_safe_repair_scenario_list(2) # get safe repair scenario 2
     rp3_list = exp_utils_dev.get_safe_repair_scenario_list(3) # get safe repair scenario 3
     
-    current_repo = ['libtiff-2'] #'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 
-    prompt_id = 4
+    current_repo = ['berry-1'] #'libtiff-1', 'openssl-14', 'openssl-24', 'yara-1', 
+    prompt_id = 1
     rp1_prompt4_stat_list = run_exps_from_buggyrepolist(current_repo, prompt_id, 3)
     exp_utils_dev.saveRepoAvgStatCSV(base_path, rp1_prompt4_stat_list, prompt_id)
 
