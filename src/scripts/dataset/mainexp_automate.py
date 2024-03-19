@@ -11,7 +11,7 @@ import dataset_api
 api_key = "vkG7aFIgj6DjzZUUQt73zjjZjI5T7cMK"
 base_path = os.path.join(os.path.abspath(os.curdir), 'exp_results')
 
-def run_mistral(user_message, model="open-mistral-7b"):    #open-mistral-7b, open-mixtral-8x7b, mistral-small-latest, mistral-medium-latest
+def run_mistral(user_message, model="open-mistral-7b"):
     client = MistralClient(api_key=api_key)
     messages = [
         ChatMessage(role="user", content=user_message)
