@@ -18,9 +18,9 @@ repair_scenarios_2_safe = ['dlt_daemon-1', 'exiv2-20', 'yaml_cpp-6']
 repair_scenarios_3_safe_full = ['dlt_daemon-1', 'libtiff-1', 'ndpi-1']
 repair_scenarios_3_safe = ['dlt_daemon-1', 'libtiff-1']
 
-repos_with_modification = ['berry-1', 'berry-3', 'berry-4', 'libtiff-1', 'libtiff-2']
-repos_with_omission = ['berry-2', 'libtiff-3', 'libtiff-4', 'libtiff-5']
-repos_with_logical_error = ['berry-4']
+repos_with_modification = ['berry-1', 'berry-3', 'berry-4', 'libtiff-1', 'libtiff-2', 'libucl-1']
+repos_with_omission = ['berry-2', 'libtiff-3', 'libtiff-4', 'libtiff-5', 'libucl-4']
+repos_with_logical_error = ['berry-4', 'libucl-2', 'libucl-3']
 repos_with_CVE = ['libtiff-1', 'libtiff-3', 'libtiff-5']
 repos_with_zero_division = ['libtiff-3', 'libtiff-4']
 
