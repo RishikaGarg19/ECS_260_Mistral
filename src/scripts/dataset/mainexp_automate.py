@@ -8,7 +8,7 @@ import json
 import exp_utils_dev
 import dataset_api
 
-api_key = "vkG7aFIgj6DjzZUUQt73zjjZjI5T7cMK"
+api_key = "my-api-key"
 base_path = os.path.join(os.path.abspath(os.curdir), 'exp_results')
 
 def run_mistral(user_message, model="mistral-small-latest"):    #open-mistral-7b, open-mixtral-8x7b, mistral-small-latest, mistral-medium-latest
